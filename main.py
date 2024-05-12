@@ -11,4 +11,6 @@ async def upload_photo(photo: UploadFile = File(...)):
     return {"filename": photo.filename}
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="87.242.101.70", port=8000)
+    u_config = uvicorn.Config("main:app", port=8080, log_level="info", reload=True)
+    server = uvicorn.Server(u_config)
+    server.serve()
