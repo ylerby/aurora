@@ -3,6 +3,7 @@ import sys
 from fastapi import FastAPI, UploadFile, File
 import uvicorn
 import asyncio
+from aurora_cv import get_answer
 
 app = FastAPI()
 
@@ -11,11 +12,17 @@ app = FastAPI()
 async def upload_photo(photo: UploadFile = File(...)):
     with open(f"photos/{photo.filename}", "wb") as f:
         f.write(photo.file.read())
-    return {"filename": photo.filename}
+
+    answer = get_answer(f"photos/{photo.filename}")
+
+    if answer is None:
+        return {"error": "invalid photo format"}
+
+    return {"answer": answer}
 
 
 async def run_server():
-    u_config = uvicorn.Config("main:app", port=8080, log_level="info", reload=True)
+    u_config = uvicorn.Config("main:app", host="0.0.0.0", port=8088, log_level="info", reload=True)
     server = uvicorn.Server(u_config)
 
     await server.serve()
