@@ -252,7 +252,8 @@ def find_answer(
     marked_contours: list,
     first_column_contours_dict: dict,
     first_row_contours_dict: dict,
-) -> list:
+    correct_answers: list  
+) -> dict:
     answer = set()
     for point in marked_contours:
         x_point, y_point = point
@@ -263,8 +264,29 @@ def find_answer(
                     x_col, y_col, w_col, h_col = cv2.boundingRect(value_col)
                     if x_col <= x_point <= x_col + w_col:
                         answer.add((key_row, key_col))
-    marshalled_answer = [{"question": row, "answer": col} for row, col in answer]
-    return marshalled_answer
+
+    result = {"answer": [], "total-correct-answers": 0, "total-incorrect-answers": 0}
+
+    for correct_answer in correct_answers:
+        question = correct_answer["question"]
+        correct_answer_value = correct_answer["correct_answer"]
+        for row, col in answer:
+            if row == question:
+                answer_value = col
+                result["answer"].append({
+                    "question": question,
+                    "answer": answer_value,
+                    "correct-answer": correct_answer_value
+                })
+                if answer_value == correct_answer_value:
+                    result["total-correct-answers"] += 1
+                else:
+                    result["total-incorrect-answers"] += 1
+                break
+
+    result["answer"] = sorted(result["answer"], key=lambda x: int(x["question"]))
+
+    return result
 
 
 IMAGE_PATH = "photos/photo.jpeg"
@@ -272,6 +294,16 @@ CONTRAST_ALPHA = 0.8
 CONTRAST_BETA = 5
 SHARPENING_KERNEL = np.array([[-1, -1, -1], [-1, 11, -1], [-1, -1, -1]])
 THRESHOLD_VALUE = 240
+
+CORRECT_ANSWER_TEST = [
+    {'question': '1', 'correct_answer': 'A'},
+    {'question': '7', 'correct_answer': 'A'},
+    {'question': '3', 'correct_answer': 'C'},
+    {'question': '2', 'correct_answer': 'B'},
+    {'question': '5', 'correct_answer': 'C'},
+    {'question': '4', 'correct_answer': 'D'},
+    {'question': '6', 'correct_answer': 'B'}
+]
 
 def get_answer(path: str):
     MIN_AREA_THRESHOLD = 100
@@ -337,6 +369,6 @@ def get_answer(path: str):
 
     marked_points = find_contour_centers(marked_cells)
 
-    answer = find_answer(marked_points, first_column_contours_dict, first_row_contours_dict)
+    answer = find_answer(marked_points, first_column_contours_dict, first_row_contours_dict, CORRECT_ANSWER_TEST)
 
     return answer
