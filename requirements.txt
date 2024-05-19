@@ -68,3 +68,4 @@ xarray-dataclasses==1.7.0
 zarr==2.18.0
 zipp==3.18.1
 opencv-python~=4.9.0.80
+libgl1-mesa-glx
