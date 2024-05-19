@@ -8,8 +8,8 @@ from aurora_cv import get_answer
 app = FastAPI()
 
 users = {
-    "buyanov": "hui",
-    "login": "123"
+    "login": "123",
+    "admin": "admin"
 }
 
 tests = {}
