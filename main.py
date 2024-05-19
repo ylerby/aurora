@@ -20,6 +20,9 @@ if "USERS" in os.environ:
 
 @app.post("/upload")
 async def upload_photo(test_number: int, photo: UploadFile = File(...)):
+    if test_number not in tests:
+        return {"error": "Test number not found"}
+
     photos_dir = "photos"
     if not os.path.exists(photos_dir):
         os.makedirs(photos_dir)
@@ -56,6 +59,8 @@ async def auth(request: Request):
 
     if test_number not in tests:
         tests[test_number] = {}
+
+    test_number = data.get("number")
 
     for answer in answers:
         question = answer.get("question")
