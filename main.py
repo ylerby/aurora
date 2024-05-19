@@ -20,7 +20,7 @@ if "USERS" in os.environ:
     users.update({k: v for k, v in [pair.split(":") for pair in os.environ["USERS"].split(",")]})
 
 @app.post("/upload")
-async def upload_photo(photo: UploadFile = File(...), test_number: int):
+async def upload_photo(test_number: int, photo: UploadFile = File(...)):
     with open(f"photos/{photo.filename}", "wb") as f:
         f.write(photo.file.read())
 
