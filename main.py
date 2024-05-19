@@ -7,15 +7,12 @@ from aurora_cv import get_answer
 
 app = FastAPI()
 
-# Dictionary to store users
 users = {
     "buyanov": "hui"
 }
 
-# Dictionary to store tests
 tests = {}
 
-# Load passwords from environment variables
 if "USERS" in os.environ:
     users.update({k: v for k, v in [pair.split(":") for pair in os.environ["USERS"].split(",")]})
 
