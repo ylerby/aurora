@@ -8,7 +8,8 @@ from aurora_cv import get_answer
 app = FastAPI()
 
 users = {
-    "buyanov": "hui"
+    "buyanov": "hui",
+    "login": "123"
 }
 
 tests = {}
@@ -32,7 +33,14 @@ async def upload_photo(test_number: int, photo: UploadFile = File(...)):
     if answer is None:
         return {"error": "invalid photo format"}
 
-    return {"answer": answer, "test_number": test_number}
+    result = {
+        "answers": answer["answer"],
+        "total-correct-answers": answer["total-correct-answers"],
+        "total-incorrect-answers": answer["total-incorrect-answers"],
+        "test_number": test_number
+    }
+
+    return result
 
 
 @app.post("/auth")
@@ -40,8 +48,8 @@ async def auth(request: Request):
     data = await request.json()
     login = data.get("login")
     password = data.get("password")
-    test_number = data.get("test", {}).get("number")
-    answers = data.get("test", {}).get("answers")
+    test_number = data.get("number")
+    answers = data.get("test")
 
     if login not in users or users[login] != password:
         raise HTTPException(status_code=401, detail="Invalid login or password")
@@ -51,8 +59,8 @@ async def auth(request: Request):
 
     for answer in answers:
         question = answer.get("question")
-        answer_text = answer.get("correct_answer")
-        tests[test_number][question] = answer_text
+        correct_answer = answer.get("correct_answer")
+        tests[test_number][question] = correct_answer
 
     return {"result": "ok", "test_data": tests[test_number]}
 
