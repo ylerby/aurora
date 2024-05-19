@@ -51,7 +51,7 @@ async def auth(request: Request):
     data = await request.json()
     login = data.get("login")
     password = data.get("password")
-    test_number = data.get("number")
+    test_number = int(data.get("number"))
     answers = data.get("test")
 
     if login not in users or users[login] != password:
@@ -59,8 +59,6 @@ async def auth(request: Request):
 
     if test_number not in tests:
         tests[test_number] = {}
-
-    test_number = data.get("number")
 
     for answer in answers:
         question = answer.get("question")
