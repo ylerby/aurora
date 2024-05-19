@@ -18,10 +18,15 @@ if "USERS" in os.environ:
 
 @app.post("/upload")
 async def upload_photo(test_number: int, photo: UploadFile = File(...)):
-    with open(f"photos/{photo.filename}", "wb") as f:
+    photos_dir = "photos"
+    if not os.path.exists(photos_dir):
+        os.makedirs(photos_dir)
+
+    with open(os.path.join(photos_dir, photo.filename), "wb") as f:
         f.write(photo.file.read())
 
-    answer = get_answer(f"photos/{photo.filename}")
+    correct_answers = [{"question": str(i), "correct_answer": answer} for i, answer in tests[test_number].items()]
+    answer = get_answer(os.path.join(photos_dir, photo.filename), correct_answers)
 
     if answer is None:
         return {"error": "invalid photo format"}
@@ -44,10 +49,10 @@ async def auth(request: Request):
 
     for answer in answers:
         question = answer.get("question")
-        answer_text = answer.get("answer")
+        answer_text = answer.get("correct_answer")
         tests[test_number][question] = answer_text
 
-    return {"result": "ok"}
+    return {"result": "ok", "test_data": tests[test_number]}
 
 async def run_server():
     u_config = uvicorn.Config("main:app", host="0.0.0.0", port=8088, log_level="info", reload=True)

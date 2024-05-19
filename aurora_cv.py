@@ -252,7 +252,7 @@ def find_answer(
     marked_contours: list,
     first_column_contours_dict: dict,
     first_row_contours_dict: dict,
-    correct_answers: list  
+    correct_answers: list
 ) -> dict:
     answer = set()
     for point in marked_contours:
@@ -264,28 +264,31 @@ def find_answer(
                     x_col, y_col, w_col, h_col = cv2.boundingRect(value_col)
                     if x_col <= x_point <= x_col + w_col:
                         answer.add((key_row, key_col))
-
+    print(answer)
     result = {"answer": [], "total-correct-answers": 0, "total-incorrect-answers": 0}
-
-    for correct_answer in correct_answers:
-        question = correct_answer["question"]
-        correct_answer_value = correct_answer["correct_answer"]
-        for row, col in answer:
-            if row == question:
-                answer_value = col
+    for row, col in answer:
+        found = False
+        for correct_answer in correct_answers:
+            if row == correct_answer["question"]:
+                correct_answer_value = correct_answer["correct_answer"]
                 result["answer"].append({
-                    "question": question,
-                    "answer": answer_value,
+                    "question": row,
+                    "answer": col,
                     "correct-answer": correct_answer_value
                 })
-                if answer_value == correct_answer_value:
+                if col == correct_answer_value:
                     result["total-correct-answers"] += 1
                 else:
                     result["total-incorrect-answers"] += 1
+                found = True
                 break
-
-    result["answer"] = sorted(result["answer"], key=lambda x: int(x["question"]))
-
+        if not found:
+            result["answer"].append({
+                "question": row,
+                "answer": col,
+                "correct-answer": None
+            })
+            result["total-incorrect-answers"] += 1
     return result
 
 
@@ -296,16 +299,16 @@ SHARPENING_KERNEL = np.array([[-1, -1, -1], [-1, 11, -1], [-1, -1, -1]])
 THRESHOLD_VALUE = 240
 
 CORRECT_ANSWER_TEST = [
-    {'question': '1', 'correct_answer': 'A'},
-    {'question': '7', 'correct_answer': 'A'},
-    {'question': '3', 'correct_answer': 'C'},
-    {'question': '2', 'correct_answer': 'B'},
+     {'question': '1', 'correct_answer': 'A'},
+     {'question': '7', 'correct_answer': 'A'},
+     {'question': '3', 'correct_answer': 'C'},
+     {'question': '2', 'correct_answer': 'B'},
     {'question': '5', 'correct_answer': 'C'},
-    {'question': '4', 'correct_answer': 'D'},
-    {'question': '6', 'correct_answer': 'B'}
+     {'question': '4', 'correct_answer': 'D'},
+     {'question': '6', 'correct_answer': 'B'}
 ]
 
-def get_answer(path: str):
+def get_answer(path: str, correct_answers: list):
     MIN_AREA_THRESHOLD = 100
     THRESHOLD_DISTANCE = 5
 
@@ -369,6 +372,6 @@ def get_answer(path: str):
 
     marked_points = find_contour_centers(marked_cells)
 
-    answer = find_answer(marked_points, first_column_contours_dict, first_row_contours_dict, CORRECT_ANSWER_TEST)
+    answer = find_answer(marked_points, first_column_contours_dict, first_row_contours_dict, correct_answers)
 
     return answer
