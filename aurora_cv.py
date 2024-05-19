@@ -1,8 +1,6 @@
 import cv2
 import numpy as np
-import pandas as pd
 import string
-import json
 
 
 def convert_to_grayscale(image_data: np.ndarray) -> np.ndarray:
@@ -10,7 +8,7 @@ def convert_to_grayscale(image_data: np.ndarray) -> np.ndarray:
 
 
 def apply_threshold(
-    image_data: np.ndarray, threshold_value: int = 100, max_value: int = 150
+        image_data: np.ndarray, threshold_value: int = 100, max_value: int = 150
 ) -> np.ndarray:
     _, binary_image = cv2.threshold(
         image_data, threshold_value, max_value, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU
@@ -23,7 +21,7 @@ def apply_gaussian_blur(image_data: np.ndarray, kernel_size: int = 5) -> np.ndar
 
 
 def apply_morphological_operation(
-    image_data: np.ndarray, operation: int = cv2.MORPH_CLOSE, kernel_size: int = 5
+        image_data: np.ndarray, operation: int = cv2.MORPH_CLOSE, kernel_size: int = 5
 ) -> np.ndarray:
     kernel = np.ones((kernel_size, kernel_size), np.uint8)
     return cv2.morphologyEx(image_data, operation, kernel)
@@ -249,10 +247,10 @@ def find_contour_centers(contours: list) -> list:
 
 
 def find_answer(
-    marked_contours: list,
-    first_column_contours_dict: dict,
-    first_row_contours_dict: dict,
-    correct_answers: list
+        marked_contours: list,
+        first_column_contours_dict: dict,
+        first_row_contours_dict: dict,
+        correct_answers: list
 ) -> dict:
     answer = set()
     for point in marked_contours:
@@ -299,14 +297,15 @@ SHARPENING_KERNEL = np.array([[-1, -1, -1], [-1, 11, -1], [-1, -1, -1]])
 THRESHOLD_VALUE = 240
 
 CORRECT_ANSWER_TEST = [
-     {'question': '1', 'correct_answer': 'A'},
-     {'question': '7', 'correct_answer': 'A'},
-     {'question': '3', 'correct_answer': 'C'},
-     {'question': '2', 'correct_answer': 'B'},
+    {'question': '1', 'correct_answer': 'A'},
+    {'question': '7', 'correct_answer': 'A'},
+    {'question': '3', 'correct_answer': 'C'},
+    {'question': '2', 'correct_answer': 'B'},
     {'question': '5', 'correct_answer': 'C'},
-     {'question': '4', 'correct_answer': 'D'},
-     {'question': '6', 'correct_answer': 'B'}
+    {'question': '4', 'correct_answer': 'D'},
+    {'question': '6', 'correct_answer': 'B'}
 ]
+
 
 def get_answer(path: str, correct_answers: list):
     MIN_AREA_THRESHOLD = 100

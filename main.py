@@ -16,6 +16,7 @@ tests = {}
 if "USERS" in os.environ:
     users.update({k: v for k, v in [pair.split(":") for pair in os.environ["USERS"].split(",")]})
 
+
 @app.post("/upload")
 async def upload_photo(test_number: int, photo: UploadFile = File(...)):
     photos_dir = "photos"
@@ -32,6 +33,7 @@ async def upload_photo(test_number: int, photo: UploadFile = File(...)):
         return {"error": "invalid photo format"}
 
     return {"answer": answer, "test_number": test_number}
+
 
 @app.post("/auth")
 async def auth(request: Request):
@@ -54,6 +56,7 @@ async def auth(request: Request):
 
     return {"result": "ok", "test_data": tests[test_number]}
 
+
 async def run_server():
     u_config = uvicorn.Config("main:app", host="0.0.0.0", port=8088, log_level="info", reload=True)
     server = uvicorn.Server(u_config)
@@ -67,6 +70,7 @@ async def main():
     ]
 
     await asyncio.gather(*tasks, return_exceptions=True)
+
 
 if __name__ == '__main__':
     loop = asyncio.get_event_loop()
