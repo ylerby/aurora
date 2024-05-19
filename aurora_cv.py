@@ -74,14 +74,16 @@ def find_table_corners(image_data: np.ndarray) -> np.ndarray:
 
 
 def fix_perspective(image_data: np.ndarray, corner_points: np.ndarray) -> np.ndarray:
-    source_points = np.float32(
-        [
-            corner_points[0][0],
-            corner_points[3][0],
-            corner_points[2][0],
-            corner_points[1][0],
-        ]
-    )
+    corner_points = corner_points.reshape(-1, 2)
+    center = np.mean(corner_points, axis=0)
+    angles = np.arctan2(corner_points[:, 1] - center[1], corner_points[:, 0] - center[0])
+    sorted_indices = np.argsort(angles)
+    corner_points = corner_points[sorted_indices]
+
+    if corner_points.shape[0] < 4:
+        raise ValueError("At least 4 corner points are required")
+
+    source_points = np.float32(corner_points[:4])
     width = max(
         np.linalg.norm(source_points[0] - source_points[1]),
         np.linalg.norm(source_points[2] - source_points[3]),
@@ -316,8 +318,7 @@ def get_answer(path: str, correct_answers: list):
     try:
         processed_image = process_image(image_data)
     except Exception as e:
-        print(f"Error processing image: {e}")
-        exit(1)
+        return {"error": f"Ошибка обработки изображения: {e}"}
 
     other_contours, first_column_contours, first_row_contours = scan_and_mark_cells(
         processed_image
@@ -337,8 +338,8 @@ def get_answer(path: str, correct_answers: list):
         first_column_contours_without_min_x = [
             contour for contour in first_column_contours if cv2.boundingRect(contour)[1] >= 10
         ]
-    except Exception:
-        return None
+    except Exception as e:
+        raise ValueError(f"Error processing contours: {e}")
 
     marked_cells = detect_empty_contours(processed_image, other_contours)
 

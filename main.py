@@ -31,10 +31,16 @@ async def upload_photo(test_number: int, photo: UploadFile = File(...)):
         f.write(photo.file.read())
 
     correct_answers = [{"question": str(i), "correct_answer": answer} for i, answer in tests[test_number].items()]
-    answer = get_answer(os.path.join(photos_dir, photo.filename), correct_answers)
+    try:
+        answer = get_answer(os.path.join(photos_dir, photo.filename), correct_answers)
+    except ValueError as e:
+        return {"error": f"Ошибка обработки изображения: {e}", "answer": None}
 
     if answer is None:
-        return {"error": "invalid photo format"}
+        return {"error": "Invalid photo format"}
+
+    if "answer" not in answer or "total-correct-answers" not in answer or "total-incorrect-answers" not in answer:
+        return {"error": "Invalid photo format"}
 
     result = {
         "answers": answer["answer"],
