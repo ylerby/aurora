@@ -310,7 +310,7 @@ CORRECT_ANSWER_TEST = [
 
 
 def get_answer(path: str, correct_answers: list):
-    MIN_AREA_THRESHOLD = 100
+    MIN_AREA_THRESHOLD = 120
     THRESHOLD_DISTANCE = 5
 
     image_data = cv2.imread(path)
