@@ -20,6 +20,33 @@ if "USERS" in os.environ:
 
 @app.post("/upload")
 async def upload_photo(test_number: int = Query(None), photo: UploadFile = File(...)):
+    """
+    :param test_number: query param, integer
+    :param photo: uploaded photo
+    :return:
+        Test results info:
+            1) Answers: (question, your answer, correct answer
+            2) Total correct answers
+            3) Total incorrect answers
+        Example:
+            {
+                "answers": [
+                    {
+                        "question": "4",
+                        "answer": "D",
+                        "correct-answer": "K"
+                    },
+                    {
+                        "question": "2",
+                        "answer": "B",
+                        "correct-answer": "B"
+                    }
+            ],
+            "total-correct-answers": 4,
+            "total-incorrect-answers": 5,
+            "test_number": 1
+        }
+    """
     if test_number is None:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="invalid query parameter")
 
@@ -58,9 +85,36 @@ async def upload_photo(test_number: int = Query(None), photo: UploadFile = File(
 @app.post("/auth")
 async def auth(request: Request):
     """
+     Authenticate a user, send correct test answers.
+
     :param request:
-    :return:
+        JSON with:
+            1) login
+            2) password
+            3) test number
+            4) answers
+        Example:
+
+            {
+                "login": "login",
+                "password": "123",
+                "number": 1,
+                "test": [
+                        {"question": 1, "correct_answer": "A"},
+                        {"question": 7, "correct_answer": "A"}
+                ]
+            }
+
+
+    :returns:
+        Processing status (ok/error).
+
+        Example:
+            {
+                "result": "ok"
+            }
     """
+
     data = await request.json()
     login = data.get("login")
     password = data.get("password")
@@ -82,6 +136,9 @@ async def auth(request: Request):
 
 
 async def run_server():
+    """
+    Server initializing, running
+    """
     u_config = uvicorn.Config("main:app", host="0.0.0.0", port=8088, log_level="info", reload=True)
     server = uvicorn.Server(u_config)
 
