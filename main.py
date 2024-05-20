@@ -1,27 +1,30 @@
 import sys
 import os
-from fastapi import FastAPI, UploadFile, File, Request, HTTPException
+from fastapi import FastAPI, UploadFile, File, Request, HTTPException, Query, status
 import uvicorn
 import asyncio
 from aurora_cv import get_answer
 
 app = FastAPI()
 
-users = {
+users: dict = {
     "login": "123",
     "admin": "admin"
 }
 
-tests = {}
+tests: dict = {}
 
 if "USERS" in os.environ:
     users.update({k: v for k, v in [pair.split(":") for pair in os.environ["USERS"].split(",")]})
 
 
 @app.post("/upload")
-async def upload_photo(test_number: int, photo: UploadFile = File(...)):
+async def upload_photo(test_number: int = Query(None), photo: UploadFile = File(...)):
+    if test_number is None:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="invalid query parameter")
+
     if test_number not in tests:
-        return {"error": "Test number not found"}
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="test number not found")
 
     photos_dir = "photos"
     if not os.path.exists(photos_dir):
@@ -34,13 +37,13 @@ async def upload_photo(test_number: int, photo: UploadFile = File(...)):
     try:
         answer = get_answer(os.path.join(photos_dir, photo.filename), correct_answers)
     except ValueError as e:
-        return {"error": f"Ошибка обработки изображения: {e}", "answer": None}
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"image processing error: {e}")
 
     if answer is None:
-        return {"error": "Invalid photo format"}
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="invalid photo format")
 
     if "answer" not in answer or "total-correct-answers" not in answer or "total-incorrect-answers" not in answer:
-        return {"error": "Invalid photo format"}
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="invalid photo format")
 
     result = {
         "answers": answer["answer"],
@@ -54,6 +57,10 @@ async def upload_photo(test_number: int, photo: UploadFile = File(...)):
 
 @app.post("/auth")
 async def auth(request: Request):
+    """
+    :param request:
+    :return:
+    """
     data = await request.json()
     login = data.get("login")
     password = data.get("password")
@@ -61,7 +68,7 @@ async def auth(request: Request):
     answers = data.get("test")
 
     if login not in users or users[login] != password:
-        raise HTTPException(status_code=401, detail="Invalid login or password")
+        raise HTTPException(status_code=401, detail="invalid login or password")
 
     if test_number not in tests:
         tests[test_number] = {}
@@ -71,7 +78,7 @@ async def auth(request: Request):
         correct_answer = answer.get("correct_answer")
         tests[test_number][question] = correct_answer
 
-    return {"result": "ok", "test_data": tests[test_number]}
+    return {"result": "ok"}
 
 
 async def run_server():

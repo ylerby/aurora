@@ -285,8 +285,8 @@ def find_answer(
         if not found:
             result["answer"].append({
                 "question": row,
-                "answer": col,
-                "correct-answer": None
+                "answer": "",
+                "correct-answer": ""
             })
             result["total-incorrect-answers"] += 1
     return result
